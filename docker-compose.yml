@@ -1,0 +1,87 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: app_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        RUBY_VERSION: "3.4.5-slim"
+    container_name: app_api
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: [.env]
+    environment:
+      RAILS_ENV: ${RAILS_ENV}
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+    command: bash -lc "bin/rails db:prepare && bin/rails server -b ${RAILS_HOST} -p ${CONTAINER_RAILS_PORT}"
+    ports:
+      - "${RAILS_PORT}:${CONTAINER_RAILS_PORT}"
+    volumes:
+      - ./api:/app:cached
+      - bundle_cache:/usr/local/bundle
+      - rails_tmp:/app/tmp
+    stdin_open: true
+    tty: true
+    user: "${HOST_UID}:${HOST_GID}"
+
+
+  rn:
+    build:
+      context: ./rn
+      dockerfile: Dockerfile
+    container_name: app_rn
+    env_file: [.env]
+    environment:
+      # Make Metro accessible
+      RCT_METRO_PORT: ${CONTAINER_METRO_PORT}
+      # Improves file change detection for Metro inside Docker
+      WATCHMAN_DISABLE: "1"
+      CHOKIDAR_USEPOLLING: "true"
+    command: bash -lc "yarn install && yarn start --host 0.0.0.0 --port ${CONTAINER_METRO_PORT}"
+    ports:
+      - "${RN_METRO_PORT}:${CONTAINER_METRO_PORT}"
+    volumes:
+      - ./rn:/app:cached
+      - rn_node_modules:/app/node_modules
+    user: "${HOST_UID}:${HOST_GID}"
+
+    # On Linux, uncomment next line so phones on same LAN can reach Metro via host:
+    # network_mode: "host"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: app_ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT}:${CONTAINER_OLLAMA_PORT}"
+    environment:
+      OLLAMA_ORIGINS: "*"
+      OLLAMA_HOST: "0.0.0.0"
+    volumes:
+      - ${OLLAMA_MODELS_DIR:-./.ollama}:/root/.ollama
+    # Example: preload a model at startup (uncomment to auto-pull)
+    # entrypoint: ["/bin/sh","-lc","/bin/ollama serve & sleep 2 && ollama pull llama3.1:8b && tail -f /dev/null"]
+
+volumes:
+  pgdata:
+  bundle_cache:
+  rails_tmp:
+  rn_node_modules:

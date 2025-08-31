@@ -1,0 +1,21 @@
+# dotenv
+.env
+
+# Rails
+api/log/*
+api/tmp/*
+api/storage/*
+api/node_modules
+api/.byebug_history
+api/config/master.key
+api/config/credentials/*.key
+
+# React Native
+rn/node_modules
+rn/.expo
+rn/.expo-shared
+
+# Docker
+.ollama
+*.pid
+.bundle
