@@ -2,11 +2,15 @@
   "name": "rn-app",
   "private": true,
   "scripts": {
-    "start": "expo start --tunnel=false --dev-client --port $RN_METRO_PORT"
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "expo": "^51.0.0",
+    "expo-dev-client": "^5.2.4",
     "react": "18.2.0",
     "react-native": "0.75.0"
-  }
+  },
+  "version": "1.0.0"
 }
