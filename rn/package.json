@@ -2,7 +2,7 @@
   "name": "rn-app",
   "private": true,
   "scripts": {
-    "start": "expo start --tunnel=false --dev-client --port $RCT_METRO_PORT"
+    "start": "expo start --tunnel=false --dev-client --port $RN_METRO_PORT"
   },
   "dependencies": {
     "expo": "^51.0.0",
