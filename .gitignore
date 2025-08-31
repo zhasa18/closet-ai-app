@@ -9,6 +9,7 @@ api/node_modules
 api/.byebug_history
 api/config/master.key
 api/config/credentials/*.key
+api/.kamal/secrets
 
 # React Native
 rn/node_modules
