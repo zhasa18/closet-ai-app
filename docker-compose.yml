@@ -31,6 +31,7 @@ services:
     environment:
       RAILS_ENV: ${RAILS_ENV}
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      OLLAMA_URL: "http://ollama:11434"
     command: bash -lc "bin/rails db:prepare && bin/rails server -b ${RAILS_HOST} -p ${CONTAINER_RAILS_PORT}"
     ports:
       - "${RAILS_PORT}:${CONTAINER_RAILS_PORT}"
@@ -71,7 +72,7 @@ services:
     container_name: app_ollama
     restart: unless-stopped
     ports:
-      - "${OLLAMA_PORT}:${CONTAINER_OLLAMA_PORT}"
+      - "${OLLAMA_PORT}:11434"
     environment:
       OLLAMA_ORIGINS: "*"
       OLLAMA_HOST: "0.0.0.0"
