@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   get :healthz, to: "health#index"
+  resources :clothing_items, only: %i[index show create update destroy]
+
 
   # Defines the root path route ("/")
   # root "posts#index"
