@@ -12,7 +12,7 @@ ARG RUBY_VERSION=3.4.5-slim
 FROM docker.io/library/ruby:$RUBY_VERSION AS base
 
 # Rails app lives here
-WORKDIR /rails
+WORKDIR /app
 
 # Install base packages
 RUN apt-get update -qq && \
@@ -53,16 +53,16 @@ FROM base
 
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
+COPY --from=build /app /app
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
+    chown -R rails:rails /app/db /app/log /app/storage /app/tmp 
 USER 1000:1000
 
 # Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+ENTRYPOINT ["/app/bin/docker-entrypoint"]
 
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
